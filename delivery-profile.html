@@ -133,7 +133,7 @@
 <script>
 const API   = 'https://potatoo-eight.vercel.app/api/delivery'
 const token = localStorage.getItem('delivery_token')
-if (!token) window.location.replace('./delivery-login.html')
+if (!token) window.location.replace('./index.html')
 
 function showErr(msg) {
   const el = document.getElementById('err-msg')
