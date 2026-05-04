@@ -123,7 +123,6 @@ async function doLogin() {
     const json = await res.json()
 
     if (!json.success) {
-      // لو محتاج تفعيل → روح لصفحة التسجيل
       if (json.needsVerification) {
         window.location.replace('./delivery-register.html')
         return
@@ -134,7 +133,9 @@ async function doLogin() {
 
     localStorage.setItem('delivery_token', json.token)
     localStorage.setItem('delivery_user', JSON.stringify(json.data))
-    window.location.replace('./delivery-home.html')
+
+    const needsProfile = !json.data?.isProfileComplete
+    window.location.replace(needsProfile ? './delivery-profile.html' : './delivery-home.html')
   } catch(e) {
     showErr('تعذر الاتصال بالسيرفر')
   } finally {
