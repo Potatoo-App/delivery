@@ -91,7 +91,8 @@
 const API = 'https://potatoo-eight.vercel.app/api/delivery'
 
 if (localStorage.getItem('delivery_token')) {
-  window.location.replace('./delivery-home.html')
+  const user = JSON.parse(localStorage.getItem('delivery_user') || '{}')
+  window.location.replace(user.isProfileComplete ? './delivery-home.html' : './delivery-profile.html')
 }
 
 function showErr(msg) {
