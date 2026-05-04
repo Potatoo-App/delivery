@@ -1,0 +1,312 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Potatoo Delivery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold-1:#FFCC44; --gold-2:#E08A00;
+      --bg:#0E0E0E; --card:#1A1A1A; --item:#222222; --border:#2E2E2E;
+      --text:#FFFFFF; --sub:rgba(255,255,255,0.5);
+      --gold-grad:linear-gradient(180deg,#FFCC44,#E08A00);
+      --red:#FF3B30; --green:#30D158; --orange:#FF9500;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;}
+
+    /* TOPBAR */
+    #topbar{
+      position:sticky;top:0;z-index:50;
+      background:rgba(14,14,14,0.95);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      padding:0 20px;height:60px;display:flex;align-items:center;gap:12px;
+    }
+    .logo-box{width:36px;height:36px;border-radius:10px;background:var(--gold-grad);
+      display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .topbar-title{font-size:18px;font-weight:900;flex:1;
+      background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .logout-btn{padding:6px 14px;border-radius:10px;border:1px solid var(--border);
+      background:transparent;color:var(--sub);font-family:'Cairo',sans-serif;
+      font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* CONTENT */
+    .content{padding:24px 20px 100px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+    /* STATUS CARD */
+    .status-card{
+      background:var(--card);border:1px solid var(--border);border-radius:24px;padding:24px;
+    }
+    .status-card.is-available{border-color:rgba(48,209,88,0.4);box-shadow:0 0 0 1px rgba(48,209,88,0.2);}
+    .status-card.is-unavailable{border-color:rgba(255,59,48,0.3);}
+
+    .status-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .driver-name{font-size:20px;font-weight:900;}
+    .driver-email{font-size:12px;color:var(--sub);margin-top:2px;}
+
+    .availability-badge{
+      padding:6px 14px;border-radius:20px;font-size:13px;font-weight:900;
+    }
+    .badge-available{background:rgba(48,209,88,0.15);color:var(--green);border:1px solid rgba(48,209,88,0.3);}
+    .badge-unavailable{background:rgba(255,59,48,0.15);color:var(--red);border:1px solid rgba(255,59,48,0.3);}
+
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;
+      background:var(--item);border-radius:16px;padding:14px 18px;}
+    .toggle-label{font-size:14px;font-weight:700;}
+    .toggle-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+    .toggle{position:relative;width:56px;height:30px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:#333;border-radius:20px;cursor:pointer;transition:0.3s;}
+    .toggle-slider:before{content:'';position:absolute;width:24px;height:24px;
+      left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;}
+    .toggle input:checked + .toggle-slider{background:var(--green);}
+    .toggle input:checked + .toggle-slider:before{transform:translateX(26px);}
+    .toggle input:disabled + .toggle-slider{opacity:0.5;cursor:not-allowed;}
+
+    /* INFO CARD */
+    .info-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:20px;}
+    .info-card-title{font-size:13px;font-weight:900;color:var(--sub);margin-bottom:14px;}
+    .info-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .info-row:last-child{border-bottom:none;padding-bottom:0;}
+    .info-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+    .info-label{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:2px;}
+    .info-val{font-size:14px;font-weight:700;}
+    .info-val a{color:var(--gold-1);text-decoration:none;}
+    .info-val a:hover{text-decoration:underline;}
+    .phone-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+    .phone-chip{padding:4px 12px;border-radius:20px;background:rgba(255,204,68,0.1);
+      border:1px solid rgba(255,204,68,0.2);color:var(--gold-1);font-size:13px;font-weight:700;
+      direction:ltr;}
+
+    /* EDIT BTN */
+    .edit-btn{
+      width:100%;height:48px;border-radius:16px;
+      border:1px solid rgba(255,204,68,0.3);background:rgba(255,204,68,0.1);
+      color:var(--gold-1);font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;
+      cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .edit-btn:hover{background:rgba(255,204,68,0.2);}
+
+    /* LOADER */
+    #loader{display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:60vh;gap:16px;}
+    .ld-spinner{width:40px;height:40px;border:3px solid var(--border);
+      border-top-color:var(--gold-1);border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .ld-text{font-size:14px;color:var(--sub);font-weight:700;}
+
+    /* TOAST */
+    #toast{
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+      background:rgba(30,30,30,0.95);border:1px solid var(--border);
+      border-radius:20px;padding:12px 20px;
+      font-size:13px;font-weight:700;color:var(--text);
+      backdrop-filter:blur(8px);z-index:200;
+      transition:transform 0.3s ease;white-space:nowrap;
+    }
+    #toast.show{transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo-box">🛵</div>
+  <div class="topbar-title">Potatoo Delivery</div>
+  <button class="logout-btn" onclick="doLogout()">خروج</button>
+</div>
+
+<div id="loader">
+  <div class="ld-spinner"></div>
+  <div class="ld-text">جاري التحميل...</div>
+</div>
+
+<div class="content" id="content" style="display:none;">
+
+  <!-- STATUS CARD -->
+  <div class="status-card" id="status-card">
+    <div class="status-top">
+      <div>
+        <div class="driver-name" id="driver-name">—</div>
+        <div class="driver-email" id="driver-email">—</div>
+      </div>
+      <div class="availability-badge" id="avail-badge">—</div>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">تغيير الحالة</div>
+        <div class="toggle-sub" id="toggle-sub">—</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="avail-toggle" onchange="toggleAvailability()"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- INFO CARD -->
+  <div class="info-card">
+    <div class="info-card-title">📋 بياناتك</div>
+
+    <div class="info-row">
+      <span class="info-icon">📞</span>
+      <div>
+        <div class="info-label">أرقام التليفون</div>
+        <div class="phone-chips" id="info-phones">—</div>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <span class="info-icon">📍</span>
+      <div>
+        <div class="info-label">الموقع</div>
+        <div class="info-val" id="info-location">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT BTN -->
+  <button class="edit-btn" onclick="window.location.href='./delivery-profile.html'">
+    ✏️ تعديل البيانات
+  </button>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API   = 'https://potatoo-eight.vercel.app/api/delivery'
+const token = localStorage.getItem('delivery_token')
+if (!token) window.location.replace('./index.html')
+
+let profile = null
+
+// ============================================================
+// LOAD PROFILE
+// ============================================================
+async function loadProfile() {
+  try {
+    const res  = await fetch(`${API}/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    if (res.status === 401) { doLogout(); return }
+
+    const json = await res.json()
+    if (!json.success) return
+
+    profile = json.data
+
+    // لو مكملش البيانات → روح للپروفايل
+    if (!profile.isProfileComplete) {
+      window.location.replace('./delivery-profile.html')
+      return
+    }
+
+    renderProfile()
+  } catch(e) {
+    showToast('فشل تحميل البيانات')
+  } finally {
+    document.getElementById('loader').style.display    = 'none'
+    document.getElementById('content').style.display   = 'flex'
+  }
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderProfile() {
+  const isAvailable = profile.isAvailable
+
+  // topbar & name
+  document.getElementById('driver-name').textContent  = profile.name || '—'
+  document.getElementById('driver-email').textContent = profile.email || '—'
+
+  // status card
+  const card  = document.getElementById('status-card')
+  const badge = document.getElementById('avail-badge')
+  const sub   = document.getElementById('toggle-sub')
+  const tog   = document.getElementById('avail-toggle')
+
+  card.className = 'status-card ' + (isAvailable ? 'is-available' : 'is-unavailable')
+  badge.className = 'availability-badge ' + (isAvailable ? 'badge-available' : 'badge-unavailable')
+  badge.textContent = isAvailable ? '🟢 متاح' : '🔴 غير متاح'
+  sub.textContent   = isAvailable ? 'أنت متاح الآن للاستلام' : 'أنت غير متاح حالياً'
+  tog.checked = isAvailable
+
+  // phones
+  const phonesEl = document.getElementById('info-phones')
+  if (profile.phones?.length) {
+    phonesEl.innerHTML = profile.phones.map(p =>
+      `<span class="phone-chip">${p}</span>`
+    ).join('')
+  } else {
+    phonesEl.textContent = '—'
+  }
+
+  // location
+  const locEl = document.getElementById('info-location')
+  if (profile.locationLink) {
+    locEl.innerHTML = `<a href="${profile.locationLink}" target="_blank">📍 عرض على الخريطة</a>`
+  } else {
+    locEl.textContent = '—'
+  }
+}
+
+// ============================================================
+// TOGGLE AVAILABILITY
+// ============================================================
+async function toggleAvailability() {
+  const tog = document.getElementById('avail-toggle')
+  tog.disabled = true
+
+  try {
+    const res  = await fetch(`${API}/toggle-availability`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const json = await res.json()
+
+    if (!json.success) {
+      // ارجع للحالة القديمة لو فشل
+      tog.checked = profile.isAvailable
+      showToast(json.message || 'فشل تغيير الحالة')
+      return
+    }
+
+    profile.isAvailable = json.data.isAvailable
+    renderProfile()
+    showToast(json.data.isAvailable ? '🟢 أنت متاح الآن' : '🔴 أنت غير متاح الآن')
+  } catch(e) {
+    tog.checked = profile.isAvailable
+    showToast('فشل الاتصال بالسيرفر')
+  } finally {
+    tog.disabled = false
+  }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function doLogout() {
+  localStorage.removeItem('delivery_token')
+  localStorage.removeItem('delivery_user')
+  window.location.replace('./index.html')
+}
+
+let toastTimer = null
+function showToast(msg) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500)
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadProfile()
+</script>
+</body>
+</html>
