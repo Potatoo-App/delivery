@@ -86,7 +86,7 @@
     <button class="submit-btn" id="btn-1" onclick="doSendOTP()">
       <span id="btn-1-text">إرسال الرمز</span>
     </button>
-    <div class="link-row"><a href="./delivery-login.html">← رجوع لتسجيل الدخول</a></div>
+    <div class="link-row"><a href="./index.html">← رجوع لتسجيل الدخول</a></div>
   </div>
 
   <!-- STEP 2: إدخال OTP -->
@@ -217,7 +217,7 @@ async function doResetPassword() {
     const json = await res.json()
     if (!json.success) { showErr(json.message); return }
     showSuccess('تم تغيير كلمة المرور بنجاح! جاري التحويل...')
-    setTimeout(() => window.location.replace('./delivery-login.html'), 1500)
+    setTimeout(() => window.location.replace('./index.html'), 1500)
   } catch(e) {
     showErr('تعذر الاتصال بالسيرفر')
   } finally {
