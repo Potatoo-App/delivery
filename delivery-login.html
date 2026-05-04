@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Potatoo Delivery — تسجيل الدخول</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold-1:#FFCC44; --gold-2:#E08A00;
+      --bg:#0E0E0E; --card:#1A1A1A; --border:#2E2E2E;
+      --text:#FFFFFF; --sub:rgba(255,255,255,0.5);
+      --gold-grad:linear-gradient(180deg,#FFCC44,#E08A00);
+      --red:#FF3B30; --green:#30D158;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    body::before{content:'';position:fixed;inset:0;z-index:0;
+      background-image:radial-gradient(circle at 20% 20%,rgba(255,204,68,0.07) 0%,transparent 50%),
+                       radial-gradient(circle at 80% 80%,rgba(224,138,0,0.07) 0%,transparent 50%);
+      pointer-events:none;}
+    .card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);
+      border-radius:28px;padding:40px 32px;width:100%;max-width:420px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.6);}
+    .logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:28px;}
+    .logo-box{width:72px;height:72px;border-radius:20px;background:var(--gold-grad);
+      display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:14px;
+      box-shadow:0 8px 24px rgba(224,138,0,0.4);}
+    .logo-title{font-size:24px;font-weight:900;background:var(--gold-grad);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .logo-sub{font-size:13px;color:var(--sub);margin-top:4px;font-weight:700;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px;}
+    .field input{width:100%;padding:13px 16px;background:#111;border:1.5px solid var(--border);
+      border-radius:14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:15px;
+      outline:none;transition:border-color 0.2s;direction:ltr;text-align:right;}
+    .field input:focus{border-color:var(--gold-1);}
+    .field input::placeholder{color:rgba(255,255,255,0.2);}
+    .err{background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.3);
+      border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--red);
+      margin-bottom:14px;display:none;text-align:center;}
+    .err.show{display:block;}
+    .submit-btn{width:100%;height:52px;border-radius:16px;border:none;
+      background:var(--gold-grad);color:#000;font-family:'Cairo',sans-serif;
+      font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;gap:8px;box-shadow:0 6px 24px rgba(224,138,0,0.35);
+      transition:opacity 0.2s,transform 0.15s;margin-top:8px;}
+    .submit-btn:hover{opacity:0.92;}
+    .submit-btn:active{transform:scale(0.98);}
+    .submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .spinner{width:20px;height:20px;border:3px solid rgba(0,0,0,0.2);border-top-color:#000;
+      border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .forget-link{text-align:left;margin-bottom:14px;}
+    .forget-link a{color:var(--sub);font-size:12px;font-weight:700;text-decoration:none;}
+    .forget-link a:hover{color:var(--gold-1);}
+    .link-row{text-align:center;margin-top:16px;font-size:13px;color:var(--sub);}
+    .link-row a{color:var(--gold-1);text-decoration:none;font-weight:700;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-box">🛵</div>
+    <div class="logo-title">Potatoo Delivery</div>
+    <div class="logo-sub">تسجيل الدخول</div>
+  </div>
+
+  <div class="err" id="err-msg"></div>
+
+  <div class="field">
+    <label>البريد الإلكتروني</label>
+    <input id="inp-email" type="email" placeholder="example@email.com"/>
+  </div>
+  <div class="field">
+    <label>كلمة المرور</label>
+    <input id="inp-password" type="password" placeholder="••••••••"/>
+  </div>
+  <div class="forget-link">
+    <a href="./delivery-forget.html">نسيت كلمة المرور؟</a>
+  </div>
+
+  <button class="submit-btn" id="login-btn" onclick="doLogin()">
+    <span id="login-btn-text">دخول</span>
+  </button>
+  <div class="link-row">ماعندكش حساب؟ <a href="./delivery-register.html">إنشاء حساب</a></div>
+</div>
+
+<script>
+const API = 'https://potatoo-eight.vercel.app/api/delivery'
+
+if (localStorage.getItem('delivery_token')) {
+  window.location.replace('./delivery-home.html')
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err-msg')
+  el.textContent = msg
+  el.classList.add('show')
+}
+function setLoading(loading) {
+  const btn = document.getElementById('login-btn')
+  const txt = document.getElementById('login-btn-text')
+  btn.disabled = loading
+  txt.innerHTML = loading ? '<div class="spinner"></div>' : 'دخول'
+}
+
+async function doLogin() {
+  document.getElementById('err-msg').classList.remove('show')
+  const email    = document.getElementById('inp-email').value.trim()
+  const password = document.getElementById('inp-password').value
+
+  if (!email || !password) { showErr('كل الحقول مطلوبة'); return }
+
+  setLoading(true)
+  try {
+    const res  = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    const json = await res.json()
+
+    if (!json.success) {
+      // لو محتاج تفعيل → روح لصفحة التسجيل
+      if (json.needsVerification) {
+        window.location.replace('./delivery-register.html')
+        return
+      }
+      showErr(json.message)
+      return
+    }
+
+    localStorage.setItem('delivery_token', json.token)
+    localStorage.setItem('delivery_user', JSON.stringify(json.data))
+    window.location.replace('./delivery-home.html')
+  } catch(e) {
+    showErr('تعذر الاتصال بالسيرفر')
+  } finally {
+    setLoading(false)
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin()
+})
+</script>
+</body>
+</html>

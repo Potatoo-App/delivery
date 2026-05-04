@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Potatoo Delivery — نسيت كلمة المرور</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold-1:#FFCC44; --gold-2:#E08A00;
+      --bg:#0E0E0E; --card:#1A1A1A; --border:#2E2E2E;
+      --text:#FFFFFF; --sub:rgba(255,255,255,0.5);
+      --gold-grad:linear-gradient(180deg,#FFCC44,#E08A00);
+      --red:#FF3B30; --green:#30D158;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    body::before{content:'';position:fixed;inset:0;z-index:0;
+      background-image:radial-gradient(circle at 20% 20%,rgba(255,204,68,0.07) 0%,transparent 50%),
+                       radial-gradient(circle at 80% 80%,rgba(224,138,0,0.07) 0%,transparent 50%);
+      pointer-events:none;}
+    .card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);
+      border-radius:28px;padding:40px 32px;width:100%;max-width:420px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.6);}
+    .logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:28px;}
+    .logo-box{width:72px;height:72px;border-radius:20px;background:var(--gold-grad);
+      display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:14px;
+      box-shadow:0 8px 24px rgba(224,138,0,0.4);}
+    .logo-title{font-size:24px;font-weight:900;background:var(--gold-grad);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .logo-sub{font-size:13px;color:var(--sub);margin-top:4px;font-weight:700;}
+    .step-title{font-size:16px;font-weight:900;margin-bottom:6px;}
+    .step-sub{font-size:13px;color:var(--sub);margin-bottom:20px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px;}
+    .field input{width:100%;padding:13px 16px;background:#111;border:1.5px solid var(--border);
+      border-radius:14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:15px;
+      outline:none;transition:border-color 0.2s;direction:ltr;text-align:right;}
+    .field input:focus{border-color:var(--gold-1);}
+    .field input::placeholder{color:rgba(255,255,255,0.2);}
+    .err{background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.3);
+      border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--red);
+      margin-bottom:14px;display:none;text-align:center;}
+    .err.show{display:block;}
+    .success-box{background:rgba(48,209,88,0.1);border:1px solid rgba(48,209,88,0.3);
+      border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--green);
+      margin-bottom:14px;display:none;text-align:center;}
+    .success-box.show{display:block;}
+    .submit-btn{width:100%;height:52px;border-radius:16px;border:none;
+      background:var(--gold-grad);color:#000;font-family:'Cairo',sans-serif;
+      font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;gap:8px;box-shadow:0 6px 24px rgba(224,138,0,0.35);
+      transition:opacity 0.2s,transform 0.15s;margin-top:8px;}
+    .submit-btn:hover{opacity:0.92;}
+    .submit-btn:active{transform:scale(0.98);}
+    .submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .spinner{width:20px;height:20px;border:3px solid rgba(0,0,0,0.2);border-top-color:#000;
+      border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .link-row{text-align:center;margin-top:16px;font-size:13px;color:var(--sub);}
+    .link-row a{color:var(--gold-1);text-decoration:none;font-weight:700;}
+    .step{display:none;}
+    .step.active{display:block;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-box">🛵</div>
+    <div class="logo-title">Potatoo Delivery</div>
+    <div class="logo-sub">استعادة كلمة المرور</div>
+  </div>
+
+  <div class="err" id="err-msg"></div>
+  <div class="success-box" id="success-msg"></div>
+
+  <!-- STEP 1: إدخال الإيميل -->
+  <div class="step active" id="step-1">
+    <div class="step-title">نسيت كلمة المرور؟</div>
+    <div class="step-sub">هنبعتلك رمز تحقق على بريدك الإلكتروني</div>
+    <div class="field">
+      <label>البريد الإلكتروني</label>
+      <input id="inp-email" type="email" placeholder="example@email.com"/>
+    </div>
+    <button class="submit-btn" id="btn-1" onclick="doSendOTP()">
+      <span id="btn-1-text">إرسال الرمز</span>
+    </button>
+    <div class="link-row"><a href="./delivery-login.html">← رجوع لتسجيل الدخول</a></div>
+  </div>
+
+  <!-- STEP 2: إدخال OTP -->
+  <div class="step" id="step-2">
+    <div class="step-title">أدخل رمز التحقق</div>
+    <div class="step-sub">تم إرسال رمز مكون من 6 أرقام على بريدك</div>
+    <div class="field">
+      <label>رمز التحقق</label>
+      <input id="inp-otp" type="text" placeholder="123456" maxlength="6"/>
+    </div>
+    <button class="submit-btn" id="btn-2" onclick="doVerifyOTP()">
+      <span id="btn-2-text">تأكيد الرمز</span>
+    </button>
+    <div class="link-row"><a href="#" onclick="goToStep(1)">← رجوع</a></div>
+  </div>
+
+  <!-- STEP 3: كلمة المرور الجديدة -->
+  <div class="step" id="step-3">
+    <div class="step-title">كلمة المرور الجديدة</div>
+    <div class="step-sub">اختار كلمة مرور جديدة لحسابك</div>
+    <div class="field">
+      <label>كلمة المرور الجديدة</label>
+      <input id="inp-password" type="password" placeholder="••••••••"/>
+    </div>
+    <div class="field">
+      <label>تأكيد كلمة المرور</label>
+      <input id="inp-confirm" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="submit-btn" id="btn-3" onclick="doResetPassword()">
+      <span id="btn-3-text">تغيير كلمة المرور</span>
+    </button>
+  </div>
+</div>
+
+<script>
+const API = 'https://potatoo-eight.vercel.app/api/delivery'
+let resetToken = null
+
+function showErr(msg) {
+  const el = document.getElementById('err-msg')
+  el.textContent = msg; el.classList.add('show')
+  document.getElementById('success-msg').classList.remove('show')
+}
+function showSuccess(msg) {
+  const el = document.getElementById('success-msg')
+  el.textContent = msg; el.classList.add('show')
+  document.getElementById('err-msg').classList.remove('show')
+}
+function clearMsgs() {
+  document.getElementById('err-msg').classList.remove('show')
+  document.getElementById('success-msg').classList.remove('show')
+}
+function setLoading(btnId, textId, loading, label) {
+  const btn = document.getElementById(btnId)
+  const txt = document.getElementById(textId)
+  btn.disabled = loading
+  txt.innerHTML = loading ? '<div class="spinner"></div>' : label
+}
+function goToStep(n) {
+  clearMsgs()
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
+  document.getElementById('step-' + n).classList.add('active')
+}
+
+async function doSendOTP() {
+  clearMsgs()
+  const email = document.getElementById('inp-email').value.trim()
+  if (!email) { showErr('البريد الإلكتروني مطلوب'); return }
+
+  setLoading('btn-1', 'btn-1-text', true, 'إرسال الرمز')
+  try {
+    const res  = await fetch(`${API}/forget-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+    const json = await res.json()
+    if (!json.success) { showErr(json.message); return }
+    showSuccess('تم إرسال رمز التحقق على بريدك')
+    goToStep(2)
+  } catch(e) {
+    showErr('تعذر الاتصال بالسيرفر')
+  } finally {
+    setLoading('btn-1', 'btn-1-text', false, 'إرسال الرمز')
+  }
+}
+
+async function doVerifyOTP() {
+  clearMsgs()
+  const otp = document.getElementById('inp-otp').value.trim()
+  if (!otp) { showErr('رمز التحقق مطلوب'); return }
+
+  setLoading('btn-2', 'btn-2-text', true, 'تأكيد الرمز')
+  try {
+    const res  = await fetch(`${API}/verify-forget-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ otp })
+    })
+    const json = await res.json()
+    if (!json.success) { showErr(json.message); return }
+    resetToken = json.data.token
+    showSuccess('تم التحقق بنجاح')
+    goToStep(3)
+  } catch(e) {
+    showErr('تعذر الاتصال بالسيرفر')
+  } finally {
+    setLoading('btn-2', 'btn-2-text', false, 'تأكيد الرمز')
+  }
+}
+
+async function doResetPassword() {
+  clearMsgs()
+  const password = document.getElementById('inp-password').value
+  const confirm  = document.getElementById('inp-confirm').value
+
+  if (!password || !confirm) { showErr('كل الحقول مطلوبة'); return }
+  if (password !== confirm)   { showErr('كلمة المرور وتأكيدها غير متطابقتين'); return }
+  if (password.length < 6)   { showErr('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return }
+
+  setLoading('btn-3', 'btn-3-text', true, 'تغيير كلمة المرور')
+  try {
+    const res  = await fetch(`${API}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: resetToken, password, confirmPassword: confirm })
+    })
+    const json = await res.json()
+    if (!json.success) { showErr(json.message); return }
+    showSuccess('تم تغيير كلمة المرور بنجاح! جاري التحويل...')
+    setTimeout(() => window.location.replace('./delivery-login.html'), 1500)
+  } catch(e) {
+    showErr('تعذر الاتصال بالسيرفر')
+  } finally {
+    setLoading('btn-3', 'btn-3-text', false, 'تغيير كلمة المرور')
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return
+  const active = document.querySelector('.step.active')?.id
+  if (active === 'step-1') doSendOTP()
+  else if (active === 'step-2') doVerifyOTP()
+  else if (active === 'step-3') doResetPassword()
+})
+</script>
+</body>
+</html>
