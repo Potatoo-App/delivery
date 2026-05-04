@@ -20,6 +20,17 @@
       background-image:radial-gradient(circle at 20% 20%,rgba(255,204,68,0.07) 0%,transparent 50%),
                        radial-gradient(circle at 80% 80%,rgba(224,138,0,0.07) 0%,transparent 50%);
       pointer-events:none;}
+
+    /* LOADER OVERLAY */
+    #page-loader{
+      position:fixed;inset:0;z-index:999;
+      background:var(--bg);display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:16px;
+    }
+    .ld-spinner{width:40px;height:40px;border:3px solid var(--border);
+      border-top-color:var(--gold-1);border-radius:50%;animation:spin 0.8s linear infinite;}
+    .ld-text{font-size:14px;color:var(--sub);font-weight:700;}
+
     .card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);
       border-radius:28px;padding:40px 32px;width:100%;max-width:460px;
       box-shadow:0 24px 80px rgba(0,0,0,0.6);}
@@ -92,13 +103,19 @@
 </head>
 <body>
 
+<!-- LOADER -->
+<div id="page-loader">
+  <div class="ld-spinner"></div>
+  <div class="ld-text">جاري تحميل بياناتك...</div>
+</div>
+
 <button class="logout-btn" onclick="doLogout()">خروج</button>
 
-<div class="card">
+<div class="card" id="main-card" style="display:none;">
   <div class="logo-wrap">
     <div class="logo-box">🛵</div>
     <div class="logo-title">Potatoo Delivery</div>
-    <div class="logo-sub">أكمل بياناتك للبدء</div>
+    <div class="logo-sub" id="page-subtitle">أكمل بياناتك للبدء</div>
   </div>
 
   <div class="err" id="err-msg"></div>
@@ -112,9 +129,7 @@
   <div class="field">
     <label>أرقام التليفون</label>
     <div class="phones-wrap" id="phones-wrap">
-      <div class="phone-row">
-        <input type="tel" dir="ltr" placeholder="01xxxxxxxxx" class="phone-input"/>
-      </div>
+      <!-- will be populated by JS -->
     </div>
     <button class="add-phone-btn" onclick="addPhoneField()">+ إضافة رقم تاني</button>
   </div>
@@ -147,6 +162,81 @@ const API   = 'https://potatoo-eight.vercel.app/api/delivery'
 const token = localStorage.getItem('delivery_token')
 if (!token) window.location.replace('./index.html')
 
+// الحالة الأصلية للـ availability (من الـ API)
+let originalAvailability = false
+
+// ============================================================
+// LOAD EXISTING PROFILE DATA
+// ============================================================
+async function loadExistingProfile() {
+  try {
+    const res = await fetch(`${API}/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    if (res.status === 401) { doLogout(); return }
+
+    const json = await res.json()
+    if (json.success && json.data) {
+      const p = json.data
+
+      // حدّث العنوان الفرعي
+      if (p.isProfileComplete) {
+        document.getElementById('page-subtitle').textContent = 'تعديل بياناتك'
+      }
+
+      // إملاء الاسم
+      if (p.name) document.getElementById('inp-name').value = p.name
+
+      // إملاء الموقع
+      if (p.locationLink) document.getElementById('inp-location').value = p.locationLink
+
+      // إملاء أرقام التليفون
+      const wrap = document.getElementById('phones-wrap')
+      wrap.innerHTML = '' // امسح أي صفوف موجودة
+
+      const phones = p.phones && p.phones.length ? p.phones : ['']
+      phones.forEach((phone, idx) => {
+        const row = document.createElement('div')
+        row.className = 'phone-row'
+        if (idx === 0) {
+          // الصف الأول بدون زرار حذف
+          row.innerHTML = `<input type="tel" dir="ltr" placeholder="01xxxxxxxxx" class="phone-input" value="${phone}"/>`
+        } else {
+          row.innerHTML = `
+            <input type="tel" dir="ltr" placeholder="01xxxxxxxxx" class="phone-input" value="${phone}"/>
+            <button class="remove-phone" onclick="this.parentElement.remove()">×</button>`
+        }
+        wrap.appendChild(row)
+      })
+
+      // إملاء الحالة
+      originalAvailability = !!p.isAvailable
+      const tog = document.getElementById('avail-toggle')
+      tog.checked = originalAvailability
+      updateAvailSub()
+    } else {
+      // لو مفيش بيانات، ضيف صف تليفون فاضي
+      addEmptyPhoneRow()
+    }
+  } catch(e) {
+    // في حالة فشل، ضيف صف تليفون فاضي
+    addEmptyPhoneRow()
+  } finally {
+    document.getElementById('page-loader').style.display = 'none'
+    document.getElementById('main-card').style.display   = 'block'
+  }
+}
+
+function addEmptyPhoneRow() {
+  const wrap = document.getElementById('phones-wrap')
+  if (!wrap.children.length) {
+    wrap.innerHTML = `<div class="phone-row"><input type="tel" dir="ltr" placeholder="01xxxxxxxxx" class="phone-input"/></div>`
+  }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
 function showErr(msg) {
   const el = document.getElementById('err-msg')
   el.textContent = msg; el.classList.add('show')
@@ -177,6 +267,8 @@ function addPhoneField() {
     <input type="tel" dir="ltr" placeholder="01xxxxxxxxx" class="phone-input"/>
     <button class="remove-phone" onclick="this.parentElement.remove()">×</button>`
   wrap.appendChild(row)
+  // focus على الإنبوت الجديد
+  row.querySelector('input').focus()
 }
 
 function doLogout() {
@@ -185,13 +277,16 @@ function doLogout() {
   window.location.replace('./index.html')
 }
 
+// ============================================================
+// SAVE PROFILE
+// ============================================================
 async function saveProfile() {
   document.getElementById('err-msg').classList.remove('show')
   document.getElementById('success-msg').classList.remove('show')
 
   const name         = document.getElementById('inp-name').value.trim()
   const locationLink = document.getElementById('inp-location').value.trim()
-  const isAvailable  = document.getElementById('avail-toggle').checked
+  const wantAvail    = document.getElementById('avail-toggle').checked
 
   const phones = [...document.querySelectorAll('.phone-input')]
     .map(i => i.value.trim()).filter(Boolean)
@@ -202,6 +297,7 @@ async function saveProfile() {
 
   setLoading(true)
   try {
+    // 1) حفظ بيانات الپروفايل
     const res  = await fetch(`${API}/complete-profile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -210,19 +306,24 @@ async function saveProfile() {
     const json = await res.json()
     if (!json.success) { showErr(json.message); return }
 
-    if (isAvailable) {
+    // 2) تحديث الـ availability فقط لو الحالة اتغيرت
+    if (wantAvail !== originalAvailability) {
       await fetch(`${API}/toggle-availability`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       })
+      originalAvailability = wantAvail
     }
 
-    // حدّث الـ localStorage
+    // 3) حدّث الـ localStorage
     const user = JSON.parse(localStorage.getItem('delivery_user') || '{}')
     localStorage.setItem('delivery_user', JSON.stringify({
       ...user,
+      name,
+      phones,
+      locationLink,
       isProfileComplete: true,
-      isAvailable
+      isAvailable: wantAvail
     }))
 
     showSuccess('تم حفظ البيانات بنجاح! جاري التحويل...')
@@ -233,6 +334,11 @@ async function saveProfile() {
     setLoading(false)
   }
 }
+
+// ============================================================
+// INIT
+// ============================================================
+loadExistingProfile()
 </script>
 </body>
 </html>
