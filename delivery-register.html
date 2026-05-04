@@ -90,7 +90,7 @@
     <button class="submit-btn" id="reg-btn" onclick="doRegister()">
       <span id="reg-btn-text">إنشاء حساب</span>
     </button>
-    <div class="link-row">عندك حساب؟ <a href="./delivery-login.html">سجل دخول</a></div>
+    <div class="link-row">عندك حساب؟ <a href="./index.html">سجل دخول</a></div>
   </div>
 
   <!-- STEP 2: تأكيد OTP -->
@@ -181,7 +181,7 @@ async function doVerifyOTP() {
     if (!json.success) { showErr(json.message); return }
 
     showSuccess('تم تفعيل الحساب بنجاح! جاري التحويل...')
-    setTimeout(() => window.location.replace('./delivery-login.html'), 1500)
+    setTimeout(() => window.location.replace('./index.html'), 1500)
   } catch(e) {
     showErr('تعذر الاتصال بالسيرفر')
   } finally {
