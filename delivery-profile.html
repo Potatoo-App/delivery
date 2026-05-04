@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8"/>
@@ -79,9 +79,21 @@
     .toggle input:checked + .toggle-slider{background:var(--green);}
     .toggle input:checked + .toggle-slider:before{transform:translateX(24px);}
     .section-divider{height:1px;background:var(--border);margin:20px 0;}
+    .logout-btn{
+      position:fixed; top:16px; left:16px; z-index:100;
+      padding:8px 16px; border-radius:10px;
+      border:1px solid rgba(255,59,48,0.3);
+      background:rgba(255,59,48,0.1); color:var(--red);
+      font-family:'Cairo',sans-serif; font-size:13px; font-weight:700;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .logout-btn:hover{background:rgba(255,59,48,0.25);}
   </style>
 </head>
 <body>
+
+<button class="logout-btn" onclick="doLogout()">خروج</button>
+
 <div class="card">
   <div class="logo-wrap">
     <div class="logo-box">🛵</div>
@@ -167,24 +179,29 @@ function addPhoneField() {
   wrap.appendChild(row)
 }
 
+function doLogout() {
+  localStorage.removeItem('delivery_token')
+  localStorage.removeItem('delivery_user')
+  window.location.replace('./index.html')
+}
+
 async function saveProfile() {
   document.getElementById('err-msg').classList.remove('show')
   document.getElementById('success-msg').classList.remove('show')
 
-  const name        = document.getElementById('inp-name').value.trim()
+  const name         = document.getElementById('inp-name').value.trim()
   const locationLink = document.getElementById('inp-location').value.trim()
   const isAvailable  = document.getElementById('avail-toggle').checked
 
   const phones = [...document.querySelectorAll('.phone-input')]
     .map(i => i.value.trim()).filter(Boolean)
 
-  if (!name)            { showErr('الاسم مطلوب'); return }
-  if (!phones.length)   { showErr('رقم تليفون واحد على الأقل مطلوب'); return }
-  if (!locationLink)    { showErr('رابط الموقع مطلوب'); return }
+  if (!name)          { showErr('الاسم مطلوب'); return }
+  if (!phones.length) { showErr('رقم تليفون واحد على الأقل مطلوب'); return }
+  if (!locationLink)  { showErr('رابط الموقع مطلوب'); return }
 
   setLoading(true)
   try {
-    // حفظ البيانات
     const res  = await fetch(`${API}/complete-profile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -193,13 +210,20 @@ async function saveProfile() {
     const json = await res.json()
     if (!json.success) { showErr(json.message); return }
 
-    // لو اختار متاح — ابعت toggle
     if (isAvailable) {
       await fetch(`${API}/toggle-availability`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       })
     }
+
+    // حدّث الـ localStorage
+    const user = JSON.parse(localStorage.getItem('delivery_user') || '{}')
+    localStorage.setItem('delivery_user', JSON.stringify({
+      ...user,
+      isProfileComplete: true,
+      isAvailable
+    }))
 
     showSuccess('تم حفظ البيانات بنجاح! جاري التحويل...')
     setTimeout(() => window.location.replace('./delivery-home.html'), 1500)
